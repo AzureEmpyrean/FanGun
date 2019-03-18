@@ -4,8 +4,8 @@
 
 
 #define NUM_LEDS 16         // number of leds
-#define modeCt 5
-#define upper_TIMEOUT 150
+#define lightCt 3  // number of light modes
+#define TIMEOUT 150
 
 #define LED_PIN           16          //upper
 #define LED_PIN2          17         //lower
@@ -23,7 +23,7 @@ String string;
 boolean upperState, upper_flag, upper_hold_flag, lowerState, lower_flag, lower_hold_flag, thumbState, thumb_flag, thumb_hold_flag;
 byte upper_counter, lower_counter;
 unsigned long upper_timer, lower_timer, thumb_timer;
-int mode = 4;
+int light = 0;
 int btn=0, rgb=0;
 
 void setup() {
@@ -56,19 +56,28 @@ void Fans();
 
 void loop() {
   EVERY_N_MILLISECONDS( 20 ) { gHue++; }
-  // put your main code here, to run repeatedly:
-  // sinelon();
-  //juggle();
-  bpm();
+
   upperTick(); 
-  //lowerTick();
-  //thumbTick();  
+  lowerTick();
+ // thumbTick();  
   Fans();
+
+  switch (light) {
+    case 0:
+      sinelon();
+      break;
+    case 1:
+      juggle();
+      break;
+    case 2:
+      bpm();
+      break;
+}
+
+     //   mode++;                         // change mode
+     //   if (mode > modeCt) mode = 4;
+     
   FastLED.show();
-  //digitalWrite(fans, HIGH);
-  //delay(2000);
-  //digitalWrite(fans, LOW);
-  //delay(2000);
 }
 
 void Fans() {
@@ -81,6 +90,7 @@ void Fans() {
    // Serial.println("not fanning");
   }
 }
+
 
 void upperTick() {
   upperState = !digitalRead(upper);
@@ -98,13 +108,13 @@ void upperTick() {
     
   }
 
-   if ( (upper_flag && upperState && (millis() - upper_timer > upper_TIMEOUT) && !upper_hold_flag)) {
+   if ( (upper_flag && upperState && (millis() - upper_timer > TIMEOUT) && !upper_hold_flag)) {
     upper_hold_flag = 1;
     upper_counter = 0;
     Serial.println("holding");
   }
 
-  if ( ((millis() - upper_timer > upper_TIMEOUT) && (upper_counter != 0)) || (string == "rgbx3") || (string == "rgbx5") ) {
+  if ( ((millis() - upper_timer > TIMEOUT) && (upper_counter != 0)) || (string == "rgbx3") || (string == "rgbx5") ) {
     if (upper_counter == 1) {               // 3 press count
         Serial.println("RGB BTN");
       }
@@ -115,6 +125,43 @@ void upperTick() {
 
           }
         upper_counter = 0;
+      }
+
+  }
+
+void lowerTick() {
+  lowerState = !digitalRead(lower);
+  if ( (lowerState && !lower_flag) || (string == "lowerx1") ){
+    //if (DEBUG) Serial.println(F("lower BTN PRESS"));
+    lower_flag = 1;
+    lower_counter++;
+    lower_timer = millis();
+
+  }
+
+  if ((!lowerState && lower_flag)){
+    lower_flag = 0;
+    lower_hold_flag = 0;
+    
+  }
+
+   if ( (lower_flag && lowerState && (millis() - lower_timer > TIMEOUT) && !lower_hold_flag)) {
+    lower_hold_flag = 1;
+    lower_counter = 0;
+    Serial.println("holding");
+  }
+
+  if ( ((millis() - lower_timer > TIMEOUT) && (lower_counter != 0)) || (string == "lowerrx3") || (string == "lowerx5") ) {
+    if (lower_counter == 1) {               // 3 press count
+        Serial.println("lower BTN");
+      }
+      if (lower_counter == 3) {               // 3 press count
+
+      }
+      if ( lower_counter == 5){
+
+          }
+        lower_counter = 0;
       }
 
   }
