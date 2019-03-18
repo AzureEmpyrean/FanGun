@@ -85,8 +85,10 @@ void Fans() {
     digitalWrite(fans, HIGH);
     Serial.println("fanning");
   }
-  if(upper_hold_flag == 0)
+  if(upper_hold_flag == 0){
     digitalWrite(fans, LOW);
+   // Serial.println("not fanning");
+  }
 }
 
 
